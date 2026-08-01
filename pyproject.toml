@@ -1,0 +1,35 @@
+[project]
+name = "morpheus"
+version = "0.1.0"
+description = "Morpheus is an AI prototype in Morgan Everett's residence created sometime after 2027 by the collaboration of Morgan Everett and Bob Page."
+readme = "README.md"
+authors = [
+    { name = "proc0", email = "alanvx@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.141.1",
+    "httpx>=0.28.1",
+    "pydantic>=2.13.4",
+    "uvicorn>=0.52.0",
+]
+
+[project.scripts]
+morpheus = "morpheus:main"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.1",
+]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I"] # Enforces standard style, logic error checks, and import sorting
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Morpheus</title>
+    <style>
+        body { background: #050505; color: #00ff41; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; height: 100vh; margin: 0; }
+        #terminal { width: 80%; height: 70%; overflow-y: auto; border: 1px solid #00ff41; margin-top: 20px; padding: 20px; background: rgba(0, 255, 65, 0.05); }
+        #input-area { width: 80%; display: flex; margin-top: 20px; }
+        input { flex-grow: 1; background: black; color: #00ff41; border: 1px solid #00ff41; padding: 10px; font-family: inherit; }
+        button { background: #00ff41; color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Morpheus v0.1</h1>
+    <div id="terminal"></div>
+    <div id="input-area">
+        <input type="text" id="userInput" placeholder="Submit query to Helios...">
+        <button onclick="sendMessage()">SEND</button>
+    </div>
+
+<script>
+    let history = [];
+    const inputField = document.getElementById('userInput');
+    const sendBtn = document.querySelector('button');
+    const terminal = document.getElementById('terminal');
+
+    async function sendMessage() {
+        const text = inputField.value;
+        if(!text) return;
+
+        // 1. UI State: Disable input and button while Helios thinks
+        inputField.disabled = true;
+        sendBtn.disabled = true;
+        sendBtn.innerText = "ANALYZING...";
+
+        terminal.innerHTML += `<div style="color: #fff; margin-top: 10px;"><strong style="color: #00ff41;">USER:</strong> ${text}</div>`;
+        inputField.value = '';
+
+        history.push({role: "user", content: text});
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({messages: history})
+            });
+            const data = await response.json();
+            
+            // We use <pre> or white-space: pre-wrap to preserve the formatting 
+            // of Helios's "thinking" process and analytical lists.
+            terminal.innerHTML += `<div style="margin-bottom: 15px; white-space: pre-wrap;"><strong style="color: #00ff41;">HELIOS:</strong> ${data.content}</div>`;
+            history.push({role: "assistant", content: data.content});
+        } catch (error) {
+            terminal.innerHTML += `<div style="color: red;">SYSTEM ERROR: Unable to reach Helios Core.</div>`;
+        } finally {
+            // 2. Reset UI State
+            inputField.disabled = false;
+            sendBtn.disabled = false;
+            sendBtn.innerText = "SEND";
+            inputField.focus(); // Return focus to input for rapid chatting
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+    }
+
+    // --- THE ENTER KEY LOGIC ---
+    inputField.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+
+</body>
+</html>
