@@ -38,15 +38,15 @@ class OllamaProvider(LLMProvider):
                         if thinking:
                             if not thinking_active:
                                 # Only yield the header ONCE at the very start
-                                yield "\n[ANALYSIS]: "
+                                yield "[THINKING]"
                                 thinking_active = True
-                            yield thinking
+                            # yield thinking
 
                         # --- HANDLE CONTENT PHASE ---
                         if content:
                             if thinking_active:
                                 # Transition from Thinking -> Speaking
-                                yield "\n\n[RESPONSE]:\n"
+                                yield "[RESPONSE]"
                                 thinking_active = False # Reset state
                             yield content
 

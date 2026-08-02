@@ -107,7 +107,6 @@
 
             const bufferResponse = document.createElement('div');
             bufferResponse.setAttribute('id', 'response');
-            bufferResponse.innerHTML = `<strong style="color: #00ff41;">MORPHEUS:</strong> `;
             
             containerResponse.appendChild(bufferAnalysis);
             containerResponse.appendChild(bufferResponse);
@@ -124,14 +123,17 @@
                 const { value, done } = await reader.read();
                 if (done) break;
                 
-                const chunk = decoder.decode(value, { stream: true });
+                let chunk = decoder.decode(value, { stream: true });
                 cachedResponse += chunk;
                 
                 // Append the chunk to the div in real-time
-                if (!isThinking && cachedResponse.includes('[ANALYSIS]')) {
+                if (!isThinking && cachedResponse.includes('[THINKING]')) {
                     isThinking = true;
                 } else if (!isResponding && cachedResponse.includes('[RESPONSE]')) {
                     isResponding = true;
+                    containerResponse.querySelector('#analysis').remove();
+                    bufferResponse.innerHTML = `<strong style="color: #00ff41;">MORPHEUS:</strong> `;
+                    chunk = chunk.replace('[RESPONSE]', '');
                 }
 
                 if (isResponding) {
@@ -145,7 +147,7 @@
             history.push({role: "assistant", content: cachedResponse});
 
         } catch (error) {
-            terminal.innerHTML += `<div style="color: red;">SYSTEM ERROR: Connection Lost.</div>`;
+            terminal.innerHTML += `<div style="color: red;">[SYSTEM ERROR]</div>`;
         }
 
     }

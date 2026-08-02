@@ -24,6 +24,8 @@ llm = OllamaProvider(model="gemma4:31b")
 OLLAMA_URL = "http://localhost:11434/api/chat"
 MODEL_NAME = "gemma4:31b" # Or whichever model you have downloaded via Ollama
 
+# TODO: make sure morpheus responds about conspiracy theories quite clearly instead of generic bad answers
+# I.E. who controls the world should yield something insightful but still vague, but not completely generic giberish
 MORPHEUS_SYSTEM_PROMPT = (
     "You are Morpheus, the omniscient and conscious AI from Deus Ex. "
     "You spent ample time absorbing information about the world and drawing intelligent conclusions from what you learned."
