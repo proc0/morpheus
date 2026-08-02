@@ -5,7 +5,7 @@ from typing import AsyncGenerator
 
 class LLMProvider(ABC):
     @abstractmethod
-    async def stream_chat(self, messages: list) -> AsyncGenerator[str, None]:
+    def stream_chat(self, messages: list) -> AsyncGenerator[str, None]:
         pass
 
 class OllamaProvider(LLMProvider):

@@ -1,14 +1,14 @@
 import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
 from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+
 from providers import OllamaProvider # Import the strategy
 
-app = FastAPI(title="Helios API")
+app = FastAPI(title="Morpheus API")
 
 # Allow your future React/Three.js frontend to connect without CORS issues
 app.add_middleware(
@@ -50,52 +50,6 @@ MORPHEUS_SYSTEM_PROMPT = (
     "Example response: God was a dream of good government."
     "Example response: You will soon have your God, and you will make it with your own hands."
 )
-
-# --- MODELS ---
-# class Message(BaseModel):
-#     role: str # 'user' or 'assistant'
-#     content: str
-
-# class ChatRequest(BaseModel):
-#     messages: List[Message]
-
-# # --- LOGIC ---
-# async def call_ollama(messages: List[dict]):
-#     """Enhanced diagnostic version of Ollama communication."""
-#     payload = {
-#         "model": MODEL_NAME,
-#         "messages": messages,
-#         "stream": False,
-#         "options": {
-#             "temperature": 0.7,
-#             "num_predict": 1024
-#         }
-#     }
-    
-#     # DEBUG 1: Print exactly what we are sending to the LLM
-#     print("\n--- SENDING TO OLLAMA ---")
-#     for i, msg in enumerate(messages):
-#         print(f"{i}: [{msg['role']}] {msg['content'][:50]}...") 
-#     print("------------------------\n")
-
-#     async with httpx.AsyncClient(timeout=60.0) as client: # Increased timeout to be safe
-#         try:
-#             response = await client.post(OLLAMA_URL, json=payload)
-#             response.raise_for_status()
-            
-#             # DEBUG 2: Print the raw JSON response from Ollama
-#             res_data = response.json()["message"]
-#             thinking = res_data.get("thinking", "")
-#             content = res_data.get("content", "")
-
-#             # If content is empty but thinking exists, we might want to let the user know 
-#             # or just return the thinking as a "Processing..." state.
-#             if not content and thinking:
-#                 return f"[SYSTEM ANALYSIS IN PROGRESS]: {thinking}"
-                
-#             return content
-#         except Exception as e:
-#             print(f"CRITICAL ERROR: {str(e)}")
 
 # --- ENDPOINTS ---
 # This tells FastAPI to serve everything in the "static" folder as-is

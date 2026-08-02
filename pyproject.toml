@@ -33,3 +33,6 @@ select = ["E", "F", "I"] # Enforces standard style, logic error checks, and impo
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.ty.environment]
+root = ["./src/morpheus"] 
