@@ -1,3 +1,4 @@
+import os
 import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
@@ -6,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from providers import OllamaProvider # Import the strategy
+from providers import OllamaProvider, GeminiProvider # Import the strategy
 
 app = FastAPI(title="Morpheus API")
 
@@ -18,7 +19,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-llm = OllamaProvider(model="gemma4:31b") 
+# llm = OllamaProvider(model="gemma4:31b") 
+# llm = AnthropicProvider(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+llm = GeminiProvider(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # --- CONFIGURATION ---
 OLLAMA_URL = "http://localhost:11434/api/chat"

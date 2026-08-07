@@ -140,7 +140,10 @@
                     bufferResponse.innerHTML += chunk;
                 } else if (isThinking) {
                     bufferAnalysis.innerHTML += chunk;
+                } else {
+                    bufferResponse.innerHTML += chunk;
                 }
+                
                 terminal.scrollTop = terminal.scrollHeight;
             }
 
