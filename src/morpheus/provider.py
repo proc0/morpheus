@@ -6,7 +6,7 @@ from pydantic import BaseModel, model_validator
 class Provider(Enum):
 	DEFAULT = auto()
 	OLLAMA = auto()
-	ANTHROPIC = auto()
+	# ANTHROPIC = auto()
 	GOOGLE = auto()
 
 class Configuration(BaseModel):
@@ -37,11 +37,11 @@ DEFAULT_PROVIDER: dict[Provider, Configuration] = {
 		model="gemma4:31b", 
 		endpoint="http://localhost:11434/api/chat"
 	),
-	Provider.ANTHROPIC: Configuration(
-		id=Provider.ANTHROPIC,
-		model="claude-3-5-sonnet-20240620",
-		api_key_id="ANTHROPIC_API_KEY"
-	),
+	# Provider.ANTHROPIC: Configuration(
+	# 	id=Provider.ANTHROPIC,
+	# 	model="claude-3-5-sonnet-20240620",
+	# 	api_key_id="ANTHROPIC_API_KEY"
+	# ),
 	Provider.GOOGLE: Configuration(
 		id=Provider.GOOGLE,
 		model="gemini-3-flash-preview",

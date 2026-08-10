@@ -9,7 +9,8 @@ from fastapi.responses import FileResponse
 from provider import Provider
 from service import Service, VoiceService
 
-
+# run piper server on a different session
+# uv run -m piper.http_server -m assets/morpheus-medium.onnx --data-dir assets
 
 app = FastAPI(title="Morpheus API")
 app.add_middleware(
@@ -34,20 +35,19 @@ async def chat(request: Request):
     data = await request.json()
     user_message = data.get("prompt", str)
     
-    # full_context = [{"role": "system", "content": MORPHEUS_SYSTEM_PROMPT}] + user_messages
     async def event_generator():
         full_response = "" 
-        async for token in service.prompt([{ "role":"user", "content": user_message }]):
+        async for token in service.prompt(user_message):
             full_response += token
             yield token
 
-        # 2. After the LLM finishes, synthesize the audio
+        # After the LLM finishes, synthesize the audio
         # We strip [THINKING] or [RESPONSE] tokens if your OllamaService yields them
         clean_text = full_response.replace("[THINKING]", "").replace("[RESPONSE]", "")
         
         if clean_text.strip():
             audio_url = await voice_service.synthesize(clean_text)
-            # 3. Send a special signal to the client so it knows where the audio is
+            # Send a special signal to the client so it knows where the audio is
             yield f"[AUDIO_READY]: {audio_url}"
 
     return StreamingResponse(event_generator(), media_type="text/plain")

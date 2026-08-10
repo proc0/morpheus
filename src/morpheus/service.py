@@ -16,14 +16,14 @@ class ProviderService(ABC):
         self.config = config
 
     @abstractmethod
-    def prompt(self, messages: list) -> AsyncGenerator[str, None]:
+    def prompt(self, text: str) -> AsyncGenerator[str, None]:
         pass
 
 class OllamaService(ProviderService):
     history = [{ "role": "system", "content": MORPHEUS_INSTRUCTIONS }]
 
-    async def prompt(self, messages: list) -> AsyncGenerator[str, None]:
-        self.history.append(messages[0])
+    async def prompt(self, text: str) -> AsyncGenerator[str, None]:
+        self.history.append({ "role":"user", "content": text })
 
         payload = {
             "model": self.config.model,
@@ -63,30 +63,30 @@ class OllamaService(ProviderService):
                     except json.JSONDecodeError:
                         continue
 
-class AnthropicService(ProviderService):
-    def __init__(self, config: Configuration):
-        super().__init__(config)
-        self.client = anthropic.AsyncAnthropic(api_key=self.config.api_key)
+# class AnthropicService(ProviderService):
+#     def __init__(self, config: Configuration):
+#         super().__init__(config)
+#         self.client = anthropic.AsyncAnthropic(api_key=self.config.api_key)
 
-    async def prompt(self, messages: list) -> AsyncGenerator[str, None]:
-        system_prompt = ""
-        user_messages = []
+#     async def prompt(self, messages: list) -> AsyncGenerator[str, None]:
+#         system_prompt = ""
+#         user_messages = []
         
-        for msg in messages:
-            if msg['role'] == 'system':
-                system_prompt = msg['content']
-            else:
-                user_messages.append(msg)
+#         for msg in messages:
+#             if msg['role'] == 'system':
+#                 system_prompt = text
+#             else:
+#                 user_messages.append(msg)
 
-        async with self.client.messages.stream(
-            max_tokens=1024,
-            messages=user_messages,
-            system=system_prompt,
-            model=self.config.model,
-            temperature=0.7
-        ) as stream:
-            async for text in stream.text_stream:
-                yield text
+#         async with self.client.messages.stream(
+#             max_tokens=1024,
+#             messages=user_messages,
+#             system=system_prompt,
+#             model=self.config.model,
+#             temperature=0.7
+#         ) as stream:
+#             async for text in stream.text_stream:
+#                 yield text
                 
 class GeminiService(ProviderService):
     def __init__(self, config: Configuration):
@@ -94,33 +94,19 @@ class GeminiService(ProviderService):
         self.client = genai.Client()
         self.history = []
 
-    async def prompt(self, messages: list) -> AsyncGenerator[str, None]:
+    async def prompt(self, text: str) -> AsyncGenerator[str, None]:
         system_prompt = ""
-        
-        msg = messages[0]
-        print(msg)
-        # for msg in messages:
-        #     if msg['role'] == 'system':
-        #         system_prompt = msg['content']
-        #     else:
-        #         # IMPORTANT: Gemini uses "model" instead of "assistant"
-        #         role = "model" if msg['role'] == 'assistant' else "user"
-        #         self.history.append(types.Content(role=role, parts=[types.Part(part=msg['content'])]))
-
-        config = types.GenerateContentConfig(
-            system_instruction=MORPHEUS_INSTRUCTIONS
-        )
 
         chat = self.client.chats.create(
             model=self.config.model,
             history=self.history,
-            config=config
+            config=types.GenerateContentConfig(
+                system_instruction=MORPHEUS_INSTRUCTIONS
+            )
         )
 
-        # last_message = self.history[-1]["parts"][0]
-
-        response_stream = chat.send_message_stream(msg['content'])
-        self.history.append(types.Content(role="user", parts=[types.Part(text=msg['content'])]))
+        response_stream = chat.send_message_stream(text)
+        self.history.append(types.Content(role="user", parts=[types.Part(text=text)]))
 
         full_response = ""
         for chunk in response_stream:
@@ -129,7 +115,6 @@ class GeminiService(ProviderService):
                 yield chunk.text
 
         self.history.append(types.Content(role="model", parts=[types.Part(text=full_response)]))
-        print(self.history)
 
 
 class Service:
