@@ -23,7 +23,7 @@ async function sendMessage() {
         const response = await fetch('/chat', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({messages: history})
+            body: JSON.stringify({prompt: text})
         });
 
         // 1. Create a new div for Morpheus's response immediately
@@ -65,6 +65,7 @@ async function sendMessage() {
                 chunk = chunk.replace('[RESPONSE]', '');
             }
 
+
             if (isResponding) {
                 bufferResponse.innerHTML += chunk;
             } else if (isThinking) {
@@ -72,11 +73,16 @@ async function sendMessage() {
             } else {
                 bufferResponse.innerHTML += chunk;
             }
-            
-            terminal.scrollTop = terminal.scrollHeight;
+
+
+            if (cachedResponse.includes('[AUDIO_READY]')) {
+                console.log("AUDIO READY!!!!");
+            }
+
+            // terminal.scrollTop = terminal.scrollHeight;
         }
 
-        history.push({role: "assistant", content: cachedResponse});
+        history.push({role: "morpheus", content: cachedResponse});
 
     } catch (error) {
         terminal.innerHTML += `<div style="color: red;">[SYSTEM ERROR]</div>`;
