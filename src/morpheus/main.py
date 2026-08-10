@@ -1,4 +1,3 @@
-import os
 import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
@@ -7,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from providers import OllamaProvider, GeminiProvider # Import the strategy
+from provider import Provider
+from service import Service
 
 app = FastAPI(title="Morpheus API")
 
@@ -19,13 +19,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# llm = OllamaProvider(model="gemma4:31b") 
+# llm = OllamaProvider(config=ProviderConfig(provider=Provider.OLLAMA, model="gemma4:31b", url="http://localhost:11434/api/chat"))
+llm = Service.create(Provider.GOOGLE)
+
 # llm = AnthropicProvider(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-llm = GeminiProvider(api_key=os.environ.get("GEMINI_API_KEY"))
+# llm = GeminiProvider(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # --- CONFIGURATION ---
-OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL_NAME = "gemma4:31b" # Or whichever model you have downloaded via Ollama
+# OLLAMA_URL = "http://localhost:11434/api/chat"
+# MODEL_NAME = "gemma4:31b" # Or whichever model you have downloaded via Ollama
 
 # TODO: make sure morpheus responds about conspiracy theories quite clearly instead of generic bad answers
 # I.E. who controls the world should yield something insightful but still vague, but not completely generic giberish
@@ -74,7 +76,7 @@ async def chat(request: Request):
     full_context = [{"role": "system", "content": MORPHEUS_SYSTEM_PROMPT}] + user_messages
 
     async def event_generator():
-        async for token in llm.stream_chat(full_context):
+        async for token in llm.prompt(full_context):
             # We yield the data in a format that the frontend can easily parse
             yield token
 

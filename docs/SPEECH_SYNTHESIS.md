@@ -9,17 +9,6 @@ https://github.com/OHF-Voice/piper1-gpl/blob/main/docs/TRAINING.md
 
 ## AI Summary
 
-1. Engine Selection & Environment Setup
-Technology Stack: Selected Piper TTS, a fast, local neural synthesis engine based on VITS.
-Build Process: Implemented a full "dev build" from source, including C++ compilation via CMake and scikit-build to ensure the training wrappers were fully compatible with the local environment.
-2. Model Fine-Tuning (The Training Loop)
-Dataset Preparation: Curated a dataset of character-consistent audio samples and corresponding transcripts in CSV format.
-Transfer Learning: Utilized a pre-trained base model as a starting point to accelerate convergence and ensure high naturalness.
-Optimization: Adjusted the PyTorch Lightning training configuration, switching the checkpoint monitor from Perceptual Quality (val_mos) to Validation Loss (val_loss) to align with local training constraints.
-3. Model Export & Optimization
-ONNX Conversion: Converted the heavy PyTorch checkpoint (.ckpt) into a lightweight, cross-platform ONNX (Open Neural Network Exchange) format for high-speed inference.
-Symbolic Trace Resolution: Patched the source code to remove training-specific assertions in the rational_quadratic_spline transforms, allowing the PyTorch exporter to successfully trace the mathematical graph without data-dependent errors.
-
 ## Building
 
 After ensuring the prereqs are installed, clone the piper repo and run the '.[train]' script with python. 
