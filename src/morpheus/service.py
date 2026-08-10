@@ -44,9 +44,8 @@ class OllamaService(ProviderService):
                         content = message.get("content", "")
 
                         if thought and not thinking:
-                            if not thinking:
-                                yield "[THINKING]"
-                                thinking = True
+                            yield "[THINKING]"
+                            thinking = True
 
                         if content:
                             if thinking:
@@ -58,11 +57,11 @@ class OllamaService(ProviderService):
                         continue
 
 class AnthropicService(ProviderService):
-    def __post_init__(self):
+    def __init__(self, config: Configuration):
+        super().__init__(config)
         self.client = anthropic.AsyncAnthropic(api_key=self.config.api_key)
 
     async def prompt(self, messages: list) -> AsyncGenerator[str, None]:
-        # 1. Extract the system prompt from the first message if it exists
         system_prompt = ""
         user_messages = []
         
@@ -72,17 +71,14 @@ class AnthropicService(ProviderService):
             else:
                 user_messages.append(msg)
 
-        # 2. Use the official Anthropic streaming method
         async with self.client.messages.stream(
             max_tokens=1024,
             messages=user_messages,
-            system=system_prompt, # System prompt is a separate param here
+            system=system_prompt,
             model=self.config.model,
             temperature=0.7
         ) as stream:
             async for text in stream.text_stream:
-                # Note: Claude doesn't have a dedicated 'thinking' field like 
-                # reasoning models in Ollama, so we just yield the content.
                 yield text
                 
 class GeminiService(ProviderService):
