@@ -1,9 +1,10 @@
 import os
+import time
 import httpx
 import json
 from abc import ABC, abstractmethod
 from typing import AsyncGenerator
-
+import uuid
 import anthropic
 from google import genai
 from google.genai import types
@@ -137,23 +138,27 @@ class VoiceService:
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
 
-    async def synthesize(self, text: str, filename: str = "response.wav") -> str:
-        """
-        Sends text to the Piper HTTP server and saves the resulting WAV file.
-        """
+    async def synthesize(self, text: str) -> str:
+        # Create a unique filename for every single response
+        filename = f"response_{uuid.uuid4().hex}.wav" 
         output_path = os.path.join(self.output_dir, filename)
         
         payload = {"text": text}
+        async with httpx.AsyncClient(timeout=None) as client:
+            try:
+                response = await client.post(f"{self.piper_url}/synthesize", json=payload)
+                if response.status_code == 200:
+                    with open(output_path, "wb") as f:
+                        f.write(response.content)
+                    return f"/static/audio/{filename}" # Return the unique name
+            except httpx.RequestError as e:
+                print(f"Connection error to Piper: {e}")
+        return ""
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(f"{self.piper_url}/synthesize", json=payload)
-            
-            if response.status_code == 200:
-                # Save the binary content (the .wav file) to disk
-                with open(output_path, "wb") as f:
-                    f.write(response.content)
-                
-                return f"/static/audio/{filename}"
-            else:
-                print(f"Piper Server Error: {response.status_code} - {response.text}")
-                return ""
+    def cleanup_old_files(self):
+        now = time.time()
+        for f in os.listdir(self.output_dir):
+            f_path = os.path.join(self.output_dir, f)
+            # If file is older than 3600 seconds (1 hour), delete it
+            if os.stat(f_path).st_mtime < now - 3600:
+                os.remove(f_path)

@@ -48,14 +48,31 @@ async function sendMessage() {
 
         let isThinking = false;
         let isResponding = false;
+        let audioPlayed = false;
+
         while (true) {
             const { value, done } = await reader.read();
             if (done) break;
             
             let chunk = decoder.decode(value, { stream: true });
-            cachedResponse += chunk;
-            
-            // Append the chunk to the div in real-time
+
+            // --- NEW: INTERCEPT AUDIO TAG ---
+            if (!audioPlayed && chunk.includes('[AUDIO_READY]:')) {
+                const parts = chunk.split('[AUDIO_READY]:');
+                
+                // 1. Extract the URL and play it
+                const audioUrl = parts[1].trim();
+                if (audioUrl) {
+                    console.log("Playing Morpheus Voice:", audioUrl);
+                    const audio = new Audio(audioUrl);
+                    audio.play().catch(e => console.error("Playback blocked by browser:", e));
+                    audioPlayed = true; 
+                }
+                
+            } else {
+                cachedResponse += chunk;
+            }
+
             if (!isThinking && cachedResponse.includes('[THINKING]')) {
                 isThinking = true;
             } else if (!isResponding && cachedResponse.includes('[RESPONSE]')) {
@@ -70,13 +87,8 @@ async function sendMessage() {
                 bufferResponse.innerHTML += chunk;
             } else if (isThinking) {
                 bufferAnalysis.innerHTML += chunk;
-            } else {
+            } else if (!audioPlayed) {
                 bufferResponse.innerHTML += chunk;
-            }
-
-
-            if (cachedResponse.includes('[AUDIO_READY]')) {
-                console.log("AUDIO READY!!!!");
             }
 
             // terminal.scrollTop = terminal.scrollHeight;
