@@ -15,6 +15,10 @@ from instructions import MORPHEUS_INSTRUCTIONS
 class ProviderService(ABC):
     def __init__(self, config: Configuration):
         self.config = config
+    
+    @abstractmethod
+    def get_last_message(self) -> str:
+        pass
 
     @abstractmethod
     def prompt(self, text: str) -> AsyncGenerator[str, None]:
@@ -22,6 +26,9 @@ class ProviderService(ABC):
 
 class OllamaService(ProviderService):
     history = [{ "role": "system", "content": MORPHEUS_INSTRUCTIONS }]
+
+    def get_last_message(self) -> str:
+        return self.history[-1]['content']
 
     async def prompt(self, text: str) -> AsyncGenerator[str, None]:
         self.history.append({ "role":"user", "content": text })
@@ -37,7 +44,7 @@ class OllamaService(ProviderService):
         }
 
         self.history.append({ "role":"assistant", "content": "" })
-        thinking = False
+
         async with httpx.AsyncClient(timeout=60.0) as client:
             async with client.stream("POST", self.config.url, json=payload) as response:
                 async for line in response.aiter_lines():
@@ -46,20 +53,22 @@ class OllamaService(ProviderService):
                         chunk = json.loads(line)
 
                         message = chunk.get("message", {})
-                        thought = message.get("thinking", "")
+                        # thought = message.get("thinking", "")
                         content = message.get("content", "")
 
-                        if thought and not thinking:
-                            thinking = True
-                            yield "[THINKING]"
+                        # if thought and not thinking:
+                        #     thinking = True
+                        #     yield "[THINKING]"
 
                         if content:
                             self.history[-1]['content'] = f"{self.history[-1]['content']}{content}"
-                            if thinking:
-                                thinking = False
-                                yield f"[RESPONSE] {content}"
-                            else:
-                                yield content
+                            yield content
+
+                            # if thinking:
+                            #     thinking = False
+                            #     yield f"[RESPONSE] {content}"
+                            # else:
+                            #     yield content
 
                     except json.JSONDecodeError:
                         continue
@@ -94,6 +103,9 @@ class GeminiService(ProviderService):
         super().__init__(config)
         self.client = genai.Client()
         self.history = []
+
+    def get_last_message(self) -> str:
+        return self.history[-1]['parts'][-1]['text']
 
     async def prompt(self, text: str) -> AsyncGenerator[str, None]:
         system_prompt = ""
