@@ -1,41 +1,40 @@
 // model.js linked in html <script>
 
-let history = [];
 const inputField = document.getElementById('userInput');
 const sendBtn = document.querySelector('button');
 const terminal = document.getElementById('terminal');
 
-let lastMessageId = 1;
+const LOADING = '[Thinking...]';
+const MORPHEUS_NAME = "[Morpheus]";
+const HUMAN_NAME = "[Human]";
 
 async function sendMessage() {
     const text = inputField.value;
     if(!text) return;
 
-    // 1. UI State: Disable input and button while Helios thinks
     inputField.disabled = true;
-    sendBtn.disabled = true;
-    sendBtn.innerText = "ANALYZING...";
-
-    terminal.innerHTML += `<div style="color: #fff; margin-top: 10px;"><strong style="color: #00ff41;">USER:</strong> ${text}</div>`;
     inputField.value = '';
+    sendBtn.disabled = true;
 
-    // history.push({role: "user", content: text});
+    terminal.querySelectorAll('article').forEach((a) => a.remove());
 
-    // 1. Create a new div for Morpheus's response immediately
-    const containerResponse = document.createElement('div');
-    containerResponse.setAttribute('id', ++lastMessageId);
-    containerResponse.style.marginBottom = "15px";
-    containerResponse.style.whiteSpace = "pre-wrap";
+    const userPrompt = document.getElementById('comment').content.cloneNode(true);
+    userPrompt.querySelector('label').innerHTML = HUMAN_NAME;
+    userPrompt.querySelector('content').innerHTML = text;
+    terminal.append(userPrompt);
 
-    // const bufferAnalysis = document.createElement('div');
-    // bufferAnalysis.setAttribute('id', 'analysis');
+    const morpheusResponse = document.getElementById('comment').content.cloneNode(true);
+    const morpheusName = morpheusResponse.querySelector('label');
+    const bufferResponse = morpheusResponse.querySelector('content');
+    morpheusResponse.querySelector('article').setAttribute('id', 'morpheus-response');
+    morpheusResponse.querySelector('article').classList.add('hide');
+    morpheusName.innerHTML = MORPHEUS_NAME;
+    terminal.append(morpheusResponse);
 
-    const bufferResponse = document.createElement('div');
-    bufferResponse.setAttribute('id', 'response');
-    
-    // containerResponse.appendChild(bufferAnalysis);
-    containerResponse.appendChild(bufferResponse);
-    terminal.appendChild(containerResponse);
+    const loader = document.createElement('span');
+    loader.setAttribute('id', 'loader');
+    loader.innerHTML = LOADING;
+    terminal.append(loader);
 
     try {
         const response = await fetch('/chat', {
@@ -44,95 +43,37 @@ async function sendMessage() {
             body: JSON.stringify({prompt: text})
         });
 
-
-        // 2. Read the stream chunk by chunk
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        // let cachedResponse = "";
-
-        // let isThinking = false;
-        // let isResponding = false;
-        // let audioPlayed = false;
 
         while (true) {
             const { value, done } = await reader.read();
             if (done) break;
             
-            let chunk = decoder.decode(value, { stream: true });
-            if (bufferResponse.innerHTML === "") {
-                bufferResponse.innerHTML = `<strong style="color: #00ff41;">MORPHEUS:</strong> `;
-            }
+            const chunk = decoder.decode(value, { stream: true });
             bufferResponse.innerHTML += chunk;
-            // --- NEW: INTERCEPT AUDIO TAG ---
-            // if (!audioPlayed && chunk.includes('[AUDIO_READY]:')) {
-            //     const parts = chunk.split('[AUDIO_READY]:');
-                
-            //     // 1. Extract the URL and play it
-            //     const audioUrl = parts[1].trim();
-            //     if (audioUrl) {
-            //         console.log("Playing Morpheus Voice:", audioUrl);
-            //         const audio = new Audio(audioUrl);
-            //         audio.play().catch(e => console.error("Playback blocked by browser:", e));
-            //         audioPlayed = true; 
-            //     }
-                
-            // } else {
-
-            //     if (bufferResponse.innerHTML === "") {
-            //         bufferResponse.innerHTML = `<strong style="color: #00ff41;">MORPHEUS:</strong> `;
-            //     }
-            //     bufferResponse.innerHTML += chunk;
-            // }
-
-            // if (!isThinking && cachedResponse.includes('[THINKING]')) {
-            //     isThinking = true;
-            // } else if (!isResponding && cachedResponse.includes('[RESPONSE]')) {
-            //     isResponding = true;
-            //     containerResponse.querySelector('#analysis').remove();
-            //     bufferResponse.innerHTML = `<strong style="color: #00ff41;">MORPHEUS:</strong> `;
-            //     chunk = chunk.replace('[RESPONSE]', '');
-            // }
-
-
-            // if (isResponding) {
-            //     bufferResponse.innerHTML += chunk;
-            // } else if (isThinking) {
-            //     bufferAnalysis.innerHTML += chunk;
-            // } else if (!audioPlayed) {
-            //     bufferResponse.innerHTML += chunk;
-            // }
-
-            // terminal.scrollTop = terminal.scrollHeight;
         }
-
-        // history.push({role: "morpheus", content: cachedResponse});
-
     } catch (error) {
         terminal.innerHTML += `<div style="color: red;">[SYSTEM ERROR]</div>`;
+        console.log(error);
     }
 
 }
 
-// --- THE ENTER KEY LOGIC ---
 inputField.addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
         sendMessage().finally(() => {
             inputField.disabled = false;
             sendBtn.disabled = false;
-            sendBtn.innerText = "SEND";
+            inputField.focus();
 
-            // const lastMessageText = document.getElementById(lastMessageId).innerHTML;
-            // console.log(lastMessageText);
             const audio = new Audio();
-
-            // 2. Set the source directly to your server endpoint
-            // If your backend endpoint takes a POST request, skip to Option 2.
-            // If you can modify your backend to accept a query string (GET), use this:
             audio.src = `http://localhost:8000/speak-last-message`;
-
-            // 3. Play immediately (the browser will buffer the incoming chunks)
             audio.play()
-                .then(() => console.log("Audio streaming started successfully!"))
+                .then(() => {
+                    document.getElementById('loader').remove();
+                    document.getElementById('morpheus-response').classList.remove('hide')
+                })
                 .catch(error => console.error("Playback failed:", error));            
 
         });

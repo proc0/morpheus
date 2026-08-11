@@ -73,6 +73,34 @@ async def speak_last_message():
     return StreamingResponse(audio_generator(), media_type="audio/wav")
 
 
+# TODO: Using Piper directly from python to avoid a seperate server
+# import argparse
+# from flask import Flask, request, Response
+# from flask_cors import CORS
+# from piper import PiperVoice
+
+# app = Flask(__name__)
+# CORS(app)  # This allows Option 1 (your JS Audio element) to connect directly!
+
+# # Load your voice model globally so it stays in memory
+# # Update these paths to where your .onnx and .json config files live
+# MODEL_PATH = "path/to/voice.onnx"
+# voice = PiperVoice.load(MODEL_PATH)
+
+# @app.route("/")
+# def synthesize():
+#     text = request.args.get("text", "")
+    
+#     def generate():
+#         # voice.synthesize_stream yields raw PCM audio bytes natively
+#         for audio_bytes in voice.synthesize_stream(text):
+#             yield audio_bytes
+
+#     # Return as a chunked stream
+#     return Response(generate(), mimetype="audio/wav")
+
+# if __name__ == "__main__":
+#     app.run(host="0.0.0.0", port=5000)
 
 if __name__ == "__main__":
     import uvicorn

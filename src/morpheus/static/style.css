@@ -1,11 +1,13 @@
 html {
     width: 100%;
+    font-size: 1.5em;
+    font-family: 'Arial', sans-serif;
 }
 
-body { 
-    background: #050505; 
+body {
+    box-sizing: border-box;
+    background: #050505;
     color: #00ff41; 
-    font-family: 'Courier New', monospace;
     display: flex;
     height: 100vh;
     margin: 0;
@@ -15,47 +17,80 @@ main {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
-    padding: 2em;
+    padding: 2rem;
 }
 
 #avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute;
+    top: 0;
+    z-index: -1;
 }
 
 #terminal { 
+    display: flex;
+    flex-direction: column;
     width: 80%;
-    height: 70%;
-    overflow-y: auto;
-    border: 1px solid #00ff41;
-    margin-top: 20px;
-    padding: 20px;
-    background: rgba(0, 255, 65, 0.05);
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+
+    #loader {
+        display: flex;
+        font-size: 1rem;
+        padding: 0.5rem;
+        color: rgba(240, 240, 240, 255);
+    }
 }
 
 #input-area { 
-    width: 80%;
     display: flex;
-    margin-top: 20px;
+    width: 80%;
+    margin-top: 0.5rem;
 }
 
 input { 
-    flex-grow: 1; 
-    background: black; 
+    flex-grow: 1;
+    appearance: base-select;
+    border: none;
+    outline: none;
+    background: black;
+    font-size: 1rem;
     color: #00ff41; 
-    border: 1px solid #00ff41; 
-    padding: 10px; 
+    padding: 0.5rem; 
     font-family: inherit; 
+    background: rgba(0, 255, 65, 0.05);
 }
 
 button { 
-    background: #00ff41; 
-    color: black; 
-    border: none; 
-    padding: 10px 20px; 
+    background-color: black;
+    border: 1px solid ;
+    font-size: 1rem;
+    color: #00ff41; 
+    border: 1px solid #00ff41; 
+    padding: 0.2rem 0.5rem; 
     cursor: pointer; 
-    font-weight: bold; 
+    font-weight: bold;
+
+    &[disabled] {
+        color: #444444;
+        border: 1px solid #444444; 
+    }
+}
+
+article {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    font-size: 1rem;
+    color: rgba(240, 240, 240, 255);
+
+    label {
+        padding-bottom: 0.1rem;
+    }
+}
+
+.hide {
+    visibility: hidden;
+    display: none;
 }

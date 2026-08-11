@@ -4,14 +4,19 @@
     <title>Morpheus</title>
     <link rel="stylesheet" href="static/style.css" />
 </head>
+<template id="comment">
+    <article>
+        <label></label>
+        <content></content>
+    </article>
+</template>
 <body>
     <main>
-        <h1>Morpheus v0.1</h1>
-        <div id="avatar"><img src="static/Morpheus.webp" /></div>
+        <div id="avatar"><img width="800" height="800" src="static/Morpheus.webp" /></div>
         <div id="terminal"></div>
         <div id="input-area">
-            <input type="text" id="userInput" placeholder="Interact with Morpheus...">
-            <button onclick="sendMessage()">SEND</button>
+            <input type="text" id="userInput" placeholder="Speak with Morpheus...">
+            <button onclick="sendMessage()">Send</button>
         </div>
     </main>
 
