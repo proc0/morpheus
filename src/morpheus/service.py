@@ -142,8 +142,8 @@ class VoiceService:
         # Create a unique filename for every single response
         filename = f"response_{uuid.uuid4().hex}.wav" 
         output_path = os.path.join(self.output_dir, filename)
-        
-        payload = {"text": text}
+
+        payload = {"text": text, "length_scale": 1.2, "noise_scale": 0.8, "noise_w_scale": 0.5}
         async with httpx.AsyncClient(timeout=None) as client:
             try:
                 response = await client.post(f"{self.piper_url}/synthesize", json=payload)
