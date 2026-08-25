@@ -74,7 +74,7 @@ inputField.addEventListener('keypress', function (e) {
                     document.getElementById('loader').remove();
                     document.getElementById('morpheus-response').classList.remove('hide')
                 })
-                .catch(error => console.error("Playback failed:", error));            
+                .catch(error => console.error("Morpheus Speak failed:", error));            
 
         });
     }

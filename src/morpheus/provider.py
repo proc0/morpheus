@@ -34,7 +34,7 @@ DEFAULT_PROVIDER: dict[Provider, Configuration] = {
 	Provider.DEFAULT: Configuration(),
 	Provider.OLLAMA: Configuration(
 		id=Provider.OLLAMA, 
-		model="gemma4:31b", 
+		model="qwen3.8:27b", 
 		endpoint="http://localhost:11434/api/chat"
 	),
 	# Provider.ANTHROPIC: Configuration(

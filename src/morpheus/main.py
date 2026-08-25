@@ -58,7 +58,8 @@ async def speak_last_message():
     # OR use client.stream with POST if Piper's endpoint supports chunked output.
     # Note: Piper's default server streams best when calling the base URL: f"{PIPER_URL}/?text=..."
     
-    # text = payload.get("text", "")
+    text = service.get_last_message()
+    if text is None: return None
     # piper_stream_url = f"http://localhost:5000/?text={service.get_last_message()}" 
     payload = {"text": service.get_last_message(), "length_scale": 1.2, "noise_scale": 0.8, "noise_w_scale": 0.5}
     async def audio_generator():

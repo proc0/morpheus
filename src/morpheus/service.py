@@ -25,10 +25,10 @@ class ProviderService(ABC):
         pass
 
 class OllamaService(ProviderService):
-    history = [{ "role": "system", "content": MORPHEUS_INSTRUCTIONS }]
+    history = [{ "role": "user", "content": MORPHEUS_INSTRUCTIONS }]
 
     def get_last_message(self) -> str:
-        return self.history[-1]['content']
+        return self.history[-1]['content'] if len(self.history) > 1 else None
 
     async def prompt(self, text: str) -> AsyncGenerator[str, None]:
         self.history.append({ "role":"user", "content": text })
@@ -37,9 +37,10 @@ class OllamaService(ProviderService):
             "model": self.config.model,
             "messages": self.history,
             "stream": True,
+            "think": False,
             "options": { 
                 "temperature": 0.7, 
-                "num_predict": 1024
+                "num_predict": 24000
             }
         }
 
@@ -56,6 +57,10 @@ class OllamaService(ProviderService):
                         # thought = message.get("thinking", "")
                         content = message.get("content", "")
 
+                        if chunk['done']:
+                            print("[MORPHEUS]")
+                            print(self.history[-1]['content'])
+                            print(chunk)
                         # if thought and not thinking:
                         #     thinking = True
                         #     yield "[THINKING]"
